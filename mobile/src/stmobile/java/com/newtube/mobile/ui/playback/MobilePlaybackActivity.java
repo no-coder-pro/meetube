@@ -2578,6 +2578,12 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     protected void onPause() {
+        if (isShortsMode()) {
+            if (mExoPlayerController != null && mExoPlayerController.getPlayWhenReady()) {
+                mExoPlayerController.setPlayWhenReady(false);
+                mShortPausedByLeave = true;
+            }
+        }
         if (mVideoArea != null) {
             mVideoArea.removeCallbacks(mShortsSingleTap); // MEETUBE(issue #172): no tap after leaving.
         }
@@ -2827,8 +2833,8 @@ public class MobilePlaybackActivity extends MobileActivity
             logPip("leave-skip reason=unsupported");
             return;
         }
-        if (!MiniPip.isAutoEnabled(this)) { // MEETUBE(issue #103): onStop carries on as audio
-            logPip("leave-skip reason=off");
+        if (!MiniPip.isAutoEnabled(this) || isShortsMode()) { // MEETUBE(issue #103): onStop carries on as audio; Shorts does not auto-enter PiP
+            logPip("leave-skip reason=" + (isShortsMode() ? "shorts" : "off"));
             return;
         }
         // Only auto-enter PiP while actually playing (matches YouTube; avoids PiP on a paused pre-roll).

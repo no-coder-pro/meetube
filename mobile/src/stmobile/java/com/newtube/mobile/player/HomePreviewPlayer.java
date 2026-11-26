@@ -87,15 +87,27 @@ public final class HomePreviewPlayer {
     }
 
     public void play(@NonNull String videoId) {
+        play(videoId, 0);
+    }
+
+    public void play(@NonNull String videoId, long startPositionMs) {
+        play(videoId, startPositionMs, true);
+    }
+
+    public void prepareOnly(@NonNull String videoId, long startPositionMs) {
+        play(videoId, startPositionMs, false);
+    }
+
+    private void play(@NonNull String videoId, long startPositionMs, boolean playWhenReady) {
         stop();
         mVideoId = videoId;
         final int generation = mGeneration;
         mFetch = YouTubeMediaItemService.instance().getFormatInfoObserve(videoId)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(info -> build(info, generation), error -> fail(generation, error));
+                .subscribe(info -> build(info, generation, startPositionMs, playWhenReady), error -> fail(generation, error));
     }
 
-    private void build(@Nullable MediaItemFormatInfo info, int generation) {
+    private void build(@Nullable MediaItemFormatInfo info, int generation, long startPositionMs, boolean playWhenReady) {
         if (generation != mGeneration) {
             return;
         }
@@ -127,11 +139,24 @@ public final class HomePreviewPlayer {
                 player.setMediaSource(result);
                 player.setVolume(mMuted ? 0f : 1f);
                 if (!mMuted) com.newtube.mobile.ui.meetune.MeeTubeSongPill.quiet(); // MEETUNE(song pill): the preview's sound wins
+                if (startPositionMs > 0) {
+                    player.seekTo(startPositionMs);
+                }
                 player.prepare();
-                player.setPlayWhenReady(true);
-                NetPath.log("home-preview play video=" + mVideoId);
+                player.setPlayWhenReady(playWhenReady);
+                NetPath.log("home-preview play=" + playWhenReady + " video=" + mVideoId + " at " + startPositionMs + "ms");
             });
         });
+    }
+
+    public void setPlayWhenReady(boolean play) {
+        if (mPlayer != null) {
+            mPlayer.setPlayWhenReady(play);
+        }
+    }
+
+    public boolean isPlaying() {
+        return mPlayer != null && mPlayer.getPlayWhenReady() && mPlayer.getPlaybackState() == Player.STATE_READY;
     }
 
     private void fail(int generation, @Nullable Throwable error) {
@@ -223,7 +248,7 @@ public final class HomePreviewPlayer {
             mPlayer = new ExoPlayer.Builder(mContext)
                     .setTrackSelector(mSelector)
                     .setLoadControl(new DefaultLoadControl.Builder()
-                            .setBufferDurationsMs(5000, 15000, 1000, 1500).build())
+                            .setBufferDurationsMs(1000, 10000, 250, 500).build())
                     .build();
             mPlayer.setVideoTextureView(mView);
             mPlayer.addListener(new Player.Listener() {

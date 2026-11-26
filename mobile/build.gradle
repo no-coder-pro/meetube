@@ -199,6 +199,8 @@ android {
 
     signingConfigs {
         release {
+            v1SigningEnabled true
+            v2SigningEnabled true
             if (keystorePropertiesFile.exists()) {
                 storeFile = file(keystoreProperties['storeFile'])
                 storePassword = keystoreProperties['storePassword']
@@ -280,10 +282,7 @@ android {
     // AppCompat, media3) carry ~80 more, whose strings would sit next to English app text anyway.
     // A new translation adds its locale here.
     androidResources {
-        localeFilters += ['en', 'ar', 'az', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'es', 'et', 'fa-rIR',
-                'fi', 'fr', 'gl-rES', 'he', 'hi', 'hr', 'hu', 'hy', 'in', 'it', 'iw', 'ja', 'ko', 'lt',
-                'lv', 'mo', 'nb', 'nl', 'pl', 'pt', 'pt-rBR', 'pt-rPT', 'ro', 'ru', 'sk', 'sl', 'sq',
-                'sr', 'sv', 'te', 'th', 'tr', 'uk', 'vi', 'zh', 'zh-rCN', 'zh-rTW']
+        localeFilters += ['en']
     }
 
     lint {
@@ -325,8 +324,8 @@ android {
             // 1.0.0 -> 10000, 1.0.1 -> 10001, 1.1.0 -> 10100, 2.0.0 -> 20000.
             // MEETUBE: every release has a code name after its number (Settings > About, App info);
             // APK files and the update manifest use the number alone.
-            versionCode 30601
-            versionName "3.6.1 Fury"
+            versionCode 30606
+            versionName "3.6.3 Fury"
         }
     }
 }

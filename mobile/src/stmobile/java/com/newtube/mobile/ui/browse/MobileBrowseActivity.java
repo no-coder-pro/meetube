@@ -1918,6 +1918,9 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void onNavItemChosen(int itemId) {
+        if (mPreview != null) {
+            mPreview.stop();
+        }
         // MEETUBE(shorts): like YouTube, the Shorts tab IS the vertical player - no grid. The tab
         // loads the feed (spinner only) and opens its first unseen short; leaving the player comes
         // back to the tab you were on (onResume).
@@ -2365,6 +2368,9 @@ public class MobileBrowseActivity extends MobileActivity
 
     /** Show the You panel over the content area (the panel is opaque; the grid stays put). */
     private void showYouPanel() {
+        if (mPreview != null) {
+            mPreview.stop();
+        }
         mYouShowing = true;
         mSectionFromYou = false;
         rebuildYouRows();
@@ -3922,11 +3928,17 @@ public class MobileBrowseActivity extends MobileActivity
 
         List<BrowseSection> chosen = new ArrayList<>();
 
-        int[] ids = {NavTabs.showHome(this) ? MediaGroup.TYPE_HOME : NavTabs.NONE, // MEETUBE(issue #213)
-                NavTabs.get(this, NavTabs.FIRST), NavTabs.get(this, NavTabs.SECOND)};
+        int[] ids = {
+                NavTabs.showHome(this) ? MediaGroup.TYPE_HOME : NavTabs.NONE,
+                MediaGroup.TYPE_SHORTS,
+                MediaGroup.TYPE_SUBSCRIPTIONS,
+                VideoDownloads.SECTION_ID
+        };
         for (int id : ids) {
             BrowseSection match = id == NavTabs.NONE ? null : findPreferredSection(enabledSections, chosen, id,
-                    id == MediaGroup.TYPE_HOME ? R.string.header_home : 0);
+                    id == MediaGroup.TYPE_HOME ? R.string.header_home
+                            : id == MediaGroup.TYPE_SUBSCRIPTIONS ? R.string.header_subscriptions
+                            : id == VideoDownloads.SECTION_ID ? R.string.header_downloads : 0);
 
             if (match != null) {
                 chosen.add(match);

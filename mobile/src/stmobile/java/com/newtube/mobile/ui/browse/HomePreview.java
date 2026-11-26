@@ -39,7 +39,7 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
     public static final int ALWAYS = 2;
 
     private static final String PREFS = "meetube_app";
-    private static final long SETTLE_MS = 400;
+    private static final long SETTLE_MS = 150;
     private static final float MIN_VISIBLE = 0.65f;
 
     public static int mode(Context context) {
@@ -77,6 +77,8 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
     private final RecyclerView mGrid;
     private final BooleanSupplier mAllowed;
     private final Handler mMain = new Handler(Looper.getMainLooper());
+    private static final java.util.Map<String, Long> sPositions = new java.util.concurrent.ConcurrentHashMap<>();
+
     private final float mDp;
     private final FrameLayout mOverlay;
     private final TextureView mTexture;
@@ -88,6 +90,7 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
     private boolean mDragging;
     private final ImageView mMute;
     private final ImageView mCc;
+    private final ImageView mPlayPause;
     private HomePreviewPlayer mPlayer;
     private final Rect mRect = new Rect();
     @Nullable private VideoCardAdapter.VideoViewHolder mHolder;
@@ -95,6 +98,8 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
     @Nullable private android.graphics.drawable.Drawable mBadgeBg;
     @Nullable private CharSequence mBadgeText; // the badge as bound, put back when the preview ends
     private boolean mCaptions;
+    private boolean mUserPaused;
+    private boolean mPlaying;
 
     private final Runnable mPick = this::pick;
     private final Runnable mTick = new Runnable() {
@@ -197,6 +202,17 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
             mPlayer.setCaptions(mCaptions);
             syncButtons();
         });
+        mPlayPause = bottomButton();
+        mPlayPause.setOnClickListener(v -> {
+            if (!mPlaying) {
+                // Not playing yet: user tapped play to start preview!
+                startPlayback();
+            } else {
+                mUserPaused = !mUserPaused;
+                mPlayer.setPlayWhenReady(!mUserPaused);
+                syncButtons();
+            }
+        });
 
         mPlayer = new HomePreviewPlayer(mContext, mTexture, this);
         mPlayer.setMuted(mMuted);
@@ -238,6 +254,13 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
     void stop() {
         mMain.removeCallbacks(mPick);
         mMain.removeCallbacks(mTick);
+        if (mHolder != null && mHolder.video() != null && mHolder.video().videoId != null && mPlaying) {
+            long pos = mPlayer.positionMs();
+            if (pos > 1000) {
+                sPositions.put(mHolder.video().videoId, pos);
+            }
+        }
+        mPlaying = false;
         mPlayer.stop();
         detach();
     }
@@ -295,12 +318,8 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
     private void start(VideoCardAdapter.VideoViewHolder card) {
         stop();
         mHolder = card;
-        mBadgeText = card.badge().getText();
-        mBadgeBg = card.badge().getBackground();
-        GradientDrawable grey = new GradientDrawable(); // not the frosted thumbnail: the video's colours would show through
-        grey.setCornerRadius(dp(6));
-        grey.setColor(0x99383838);
-        card.badge().setBackground(grey);
+        mUserPaused = false;
+        mPlaying = false;
         mTexture.setAlpha(0f);
         mProgress.setVisibility(View.GONE);
         mScrub.setVisibility(View.GONE);
@@ -309,9 +328,43 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
         mProgress.getLayoutParams().height = dp(3);
         mMute.setVisibility(View.GONE);
         mCc.setVisibility(View.GONE);
+        mPlayPause.setVisibility(View.VISIBLE);
+        mPlayPause.setImageResource(R.drawable.ic_player_play);
         ViewGroup frame = (ViewGroup) card.thumbnailFrame();
         frame.addView(mOverlay, 1, new FrameLayout.LayoutParams(-1, -1)); // under the duration badge
-        mPlayer.play(card.video().videoId);
+
+        // Preload video stream immediately in background so tap starts instantly
+        if (card.video() != null && card.video().videoId != null) {
+            String vid = card.video().videoId;
+            Long saved = sPositions.get(vid);
+            long resumePos = saved != null ? saved : 0;
+            mPlayer.prepareOnly(vid, resumePos);
+        }
+    }
+
+    private void startPlayback() {
+        if (mHolder == null || mHolder.video() == null || mHolder.video().videoId == null) {
+            return;
+        }
+        mPlaying = true;
+        mUserPaused = false;
+        mBadgeText = mHolder.badge().getText();
+        mBadgeBg = mHolder.badge().getBackground();
+        GradientDrawable grey = new GradientDrawable(); // not the frosted thumbnail: the video's colours would show through
+        grey.setCornerRadius(dp(6));
+        grey.setColor(0x99383838);
+        mHolder.badge().setBackground(grey);
+        String vid = mHolder.video().videoId;
+
+        if (vid.equals(mPlayer.videoId())) {
+            // Already preloaded and buffered! Instant play!
+            mPlayer.setPlayWhenReady(true);
+            onFrame();
+        } else {
+            Long saved = sPositions.get(vid);
+            long resumePos = saved != null ? saved : 0;
+            mPlayer.play(vid, resumePos);
+        }
     }
 
     private void detach() {
@@ -346,6 +399,7 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
         mProgress.setVisibility(View.VISIBLE);
         mScrub.setVisibility(View.VISIBLE);
         mMute.setVisibility(View.VISIBLE);
+        mPlayPause.setVisibility(View.VISIBLE);
         syncButtons();
         mMain.removeCallbacks(mTick);
         mMain.post(mTick);
@@ -376,6 +430,24 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
     private void syncButtons() {
         mMute.setImageResource(mMuted ? R.drawable.ic_player_volume_off : R.drawable.ic_player_volume_up);
         mCc.setImageResource(mCaptions ? R.drawable.ic_player_cc : R.drawable.ic_player_cc_off);
+        mPlayPause.setImageResource(!mPlaying || mUserPaused ? R.drawable.ic_player_play : R.drawable.ic_player_pause);
+    }
+
+    /** A round dark button in the card's bottom left corner for play/pause. */
+    private ImageView bottomButton() {
+        ImageView view = new ImageView(mContext);
+        GradientDrawable bg = new GradientDrawable();
+        bg.setShape(GradientDrawable.OVAL);
+        bg.setColor(0x66000000);
+        view.setBackground(bg);
+        view.setPadding(dp(7), dp(7), dp(7), dp(7));
+        view.setColorFilter(Color.WHITE);
+        view.setVisibility(View.GONE);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(dp(34), dp(34), Gravity.BOTTOM | Gravity.START);
+        lp.bottomMargin = dp(14);
+        lp.leftMargin = dp(8);
+        mOverlay.addView(view, lp);
+        return view;
     }
 
     /** A round dark button in the card's top right corner; {@code row} 0 is the top one. */

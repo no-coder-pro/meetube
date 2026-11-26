@@ -663,7 +663,7 @@
     <string name="mobile_about_share">Share MeeTube</string>
     <string name="mobile_about_share_desc">Send the link to someone who\'d like it</string>
     <string name="mobile_about_share_text">MeeTube — a YouTube client for phones, built on SmartTube: %1$s</string>
-    <string name="mobile_about_repo_url" translatable="false">https://github.com/yashoncode/meetube</string>
+    <string name="mobile_about_repo_url" translatable="false">https://github.com/no-coder-pro/meetube</string>
     <!-- MEETUBE(about): the card at the top of About. -->
     <string name="mobile_about_dev_name" translatable="false">Yashwanth</string>
     <string name="mobile_about_dev_handle" translatable="false">github.com/yashoncode</string>

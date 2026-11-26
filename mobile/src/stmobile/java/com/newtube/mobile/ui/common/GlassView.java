@@ -408,7 +408,13 @@ public class GlassView extends FrameLayout {
         } else if (mOnGlass) {
             mTintPaint.setColor(mTint);
         } else {
-            mTintPaint.setColor((mTint & 0x00FFFFFF) | (FALLBACK_ALPHA << 24));
+            // Keep translucent glass tint on devices below Android S, rather than near-opaque white
+            int tintAlpha = (mTint >>> 24);
+            if (tintAlpha > 0 && tintAlpha <= 0x66) {
+                mTintPaint.setColor(mTint);
+            } else {
+                mTintPaint.setColor((mTint & 0x00FFFFFF) | (FALLBACK_ALPHA << 24));
+            }
         }
         canvas.drawRect(0, 0, getWidth(), getHeight(), mTintPaint);
         if (mLiquid) {
