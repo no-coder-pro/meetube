@@ -409,7 +409,7 @@
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginHorizontal="?attr/meetubeNavSideMargin"
         android:layout_marginBottom="?attr/meetubeNavBottomMargin"
-        android:elevation="6dp"
+        android:elevation="3dp"
         android:paddingTop="2dp"
         android:paddingBottom="2dp"
         android:paddingHorizontal="4dp"
@@ -445,9 +445,9 @@
         android:layout_gravity="bottom|start"
         android:alpha="0"
         android:contentDescription="@string/meetune_home"
-        android:elevation="6dp"
+        android:elevation="3dp"
         android:visibility="gone"
-        app:glassCornerRadius="?attr/meetubeNavCorner"
+        app:glassCornerRadius="28dp"
         app:glassTint="?attr/meetubeNavTint">
 
         <ImageView
@@ -468,9 +468,9 @@
         android:layout_gravity="bottom|end"
         android:alpha="0"
         android:contentDescription="@string/meetune_search"
-        android:elevation="6dp"
+        android:elevation="3dp"
         android:visibility="gone"
-        app:glassCornerRadius="?attr/meetubeNavCorner"
+        app:glassCornerRadius="28dp"
         app:glassTint="?attr/meetubeNavTint">
 
         <ImageView
@@ -490,7 +490,7 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_gravity="bottom"
-        android:elevation="6dp"
+        android:elevation="3dp"
         android:visibility="gone"
         app:glassCornerRadius="28dp"
         app:glassTint="?attr/meetubeNavTint">

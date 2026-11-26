@@ -548,11 +548,11 @@ final class MeeTuneMiniPill {
         int circleBottom = navBottom + (navHeight - circleHeight) / 2;
         size(mTab, circleWidth, circleHeight);
         size(mSearch, circleWidth, circleHeight);
-        margins(mTab, left, 0, circleBottom);
-        margins(mSearch, 0, right, circleBottom);
+        margins(mTab, left, 0, navBottom);
+        margins(mSearch, 0, right, navBottom);
         float swap = Math.min(1f, f / 0.2f); // the bar hands over to its halves at once
         mNavGlass.setAlpha(1f - swap);
-        mNavGlass.setVisibility(swap >= 1f ? View.INVISIBLE : View.VISIBLE);
+        mNavGlass.setVisibility(swap >= 1f ? View.GONE : View.VISIBLE);
         float icon = Math.max(0f, Math.min(1f, (f - 0.35f) / 0.5f));
         for (View dot : new View[] {mTab, mSearch}) {
             dot.setAlpha(swap);

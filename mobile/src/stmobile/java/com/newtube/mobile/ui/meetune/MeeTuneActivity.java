@@ -48,8 +48,9 @@ import java.util.List;
 public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.MiniHost, MeeTuneAdapter.Host {
     private static final int HOME = 0;
     private static final int EXPLORE = 1;
-    private static final int LIBRARY = 2;
-    private static final int SEARCH = 3;
+    private static final int DOWNLOADS = 2;
+    private static final int LIBRARY = 3;
+    private static final int SEARCH = 4;
 
     private static final int SORT_ADDED = 0;
     private static final int SORT_DEFAULT = 1;
@@ -79,7 +80,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         }
     }
 
-    private final Page[] mTabs = {new Page(HOME), new Page(EXPLORE), new Page(LIBRARY), new Page(SEARCH)};
+    private final Page[] mTabs = {new Page(HOME), new Page(EXPLORE), new Page(DOWNLOADS), new Page(LIBRARY), new Page(SEARCH)};
     private final Deque<Page> mStack = new ArrayDeque<>();
     private int mTab = HOME;
     private int mGeneration;
@@ -272,8 +273,9 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         Menu menu = mNav.getMenu();
         menu.add(Menu.NONE, HOME, 0, R.string.meetune_home).setIcon(R.drawable.ic_nav_home);
         menu.add(Menu.NONE, EXPLORE, 1, R.string.meetune_explore).setIcon(R.drawable.ic_meetune_explore);
-        menu.add(Menu.NONE, LIBRARY, 2, R.string.meetune_library).setIcon(R.drawable.ic_meetune_library);
-        menu.add(Menu.NONE, SEARCH, 3, R.string.meetune_search).setIcon(R.drawable.ic_mobile_search);
+        menu.add(Menu.NONE, DOWNLOADS, 2, R.string.header_downloads).setIcon(R.drawable.ic_nav_downloads);
+        menu.add(Menu.NONE, LIBRARY, 3, R.string.meetune_library).setIcon(R.drawable.ic_meetune_library);
+        menu.add(Menu.NONE, SEARCH, 4, R.string.meetune_search).setIcon(R.drawable.ic_mobile_search);
         // MeeTube's own bar: its lens, glow, drag and tab-name setting (Settings > Tabs, MeeTube's).
         mNavBar = new GlassNavBar(this, findViewById(R.id.meetune_nav_glass), mNav,
                 findViewById(R.id.meetune_nav_lens), new GlassNavBar.Listener() {
@@ -356,7 +358,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     /** A download moved on: an open Downloads page shows each song's progress and speed as it comes. */
     private final com.newtube.mobile.downloads.DownloadRegistry.Listener mDownloadProgress = () -> {
         Page page = current();
-        if (page == null || page.rows == null || isFinishing() || !MeeTune.DOWNLOADS.equals(page.browseId)) return;
+        if (page == null || page.rows == null || isFinishing() || (!MeeTune.DOWNLOADS.equals(page.browseId) && page.tab != DOWNLOADS)) return;
         for (MeeTuneAdapter.Row row : page.rows) {
             if (row.item == null || row.item.videoId == null) continue;
             com.newtube.mobile.downloads.DownloadItem download = MeeTune.songDownload(this, row.item.videoId);
@@ -367,7 +369,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     void downloadsChanged() {
         Page page = current();
-        if (page != null && MeeTune.DOWNLOADS.equals(page.browseId)) load(page, true);
+        if (page != null && (MeeTune.DOWNLOADS.equals(page.browseId) || page.tab == DOWNLOADS)) load(page, true);
     }
 
     private Page current() {
@@ -515,6 +517,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     private static int tabTitle(int tab) {
         switch (tab) {
             case EXPLORE: return R.string.meetune_explore;
+            case DOWNLOADS: return R.string.header_downloads;
             case LIBRARY: return R.string.meetune_library;
             case SEARCH: return R.string.meetune_search;
             default: return R.string.meetune_name;
@@ -566,7 +569,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                 }
                 return MeeTuneAdapter.rows(MeeTune.history(this), true, false);
             }
-            if (pushed && MeeTune.DOWNLOADS.equals(page.browseId)) {
+            if ((pushed && MeeTune.DOWNLOADS.equals(page.browseId)) || tab == DOWNLOADS) {
                 return MeeTuneAdapter.rows(MeeTune.downloads(this), true, false);
             }
             if (pushed && MeeTuneLibrary.isPlaylist(page.browseId)) {

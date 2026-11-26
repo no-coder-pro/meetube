@@ -277,7 +277,7 @@
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginHorizontal="?attr/meetubeNavSideMargin"
         android:layout_marginBottom="?attr/meetubeNavBottomMargin"
-        android:elevation="6dp"
+        android:elevation="3dp"
         android:paddingTop="2dp"
         android:paddingBottom="2dp"
         android:paddingHorizontal="4dp"
