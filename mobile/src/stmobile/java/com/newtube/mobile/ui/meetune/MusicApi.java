@@ -554,6 +554,16 @@ final class MusicApi {
             if (auth != null) {
                 request.header("Cookie", cookies).header("Authorization", auth)
                         .header("X-Goog-AuthUser", String.valueOf(WebSession.getAuthUser()));
+                // If a brand account/channel is selected, send X-Goog-PageId / X-Goog-Pageid
+                com.liskovsoft.mediaserviceinterfaces.oauth.Account sel =
+                        com.liskovsoft.smartyoutubetv2.common.misc.MediaServiceManager.instance().getSelectedAccount();
+                if (sel instanceof com.liskovsoft.googlecommon.service.oauth.YouTubeAccount) {
+                    String pageId = ((com.liskovsoft.googlecommon.service.oauth.YouTubeAccount) sel).getPageIdToken();
+                    if (pageId != null && !pageId.isEmpty()) {
+                        request.header("X-Goog-PageId", pageId);
+                        request.header("X-Goog-Pageid", pageId);
+                    }
+                }
             }
             return execute(request.build(), auth != null ? store : null);
         }

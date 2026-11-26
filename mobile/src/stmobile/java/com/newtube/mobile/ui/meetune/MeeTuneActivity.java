@@ -1253,6 +1253,14 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             content.addView(row);
         }
         boolean signedIn = com.newtube.mobile.ui.signin.WebSignInState.isSignedIn(this);
+        accountMenuRow(content, R.drawable.ic_mobile_account,
+                getString(R.string.mobile_accounts_title), () -> {
+                    popup.dismiss();
+                    com.newtube.mobile.ui.browse.AccountsSheet.show(this, () -> {
+                        for (Page page : mTabs) page.rows = null;
+                        show(current(), true);
+                    });
+                });
         accountMenuRow(content, R.drawable.ic_mobile_add,
                 getString(signedIn ? R.string.meetune_add_account : R.string.meetune_sign_in), () -> {
                     popup.dismiss();

@@ -151,18 +151,19 @@ public final class MeeTune {
         });
         // Coming back (MeeTube after MeeTune), the blurred screen comes into focus again.
         ((LifecycleOwner) from).getLifecycle().addObserver(new DefaultLifecycleObserver() {
-            private boolean mLeft;
-
             @Override
             public void onStop(LifecycleOwner owner) {
-                mLeft = true;
             }
 
             @Override
             public void onResume(LifecycleOwner owner) {
-                if (!mLeft) return; // the catch-up call when added
                 owner.getLifecycle().removeObserver(this);
                 content.setTag(R.id.meetune_switching, null);
+                content.animate().cancel();
+                content.setAlpha(1f);
+                if (Build.VERSION.SDK_INT >= 31) {
+                    content.setRenderEffect(null);
+                }
                 Motion.frostIn(content);
             }
         });

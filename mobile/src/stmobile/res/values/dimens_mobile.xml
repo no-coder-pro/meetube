@@ -60,8 +60,8 @@
     <dimen name="mobile_settings_row_title_size">16sp</dimen>
     <dimen name="mobile_settings_row_summary_size">14sp</dimen>
     <dimen name="mobile_settings_header_size">14sp</dimen>
-    <!-- MEETUBE(glass): room under a list for the floating nav pill (68dp pill + 12dp margin + 12dp gap). -->
-    <dimen name="meetube_nav_clearance">92dp</dimen>
+    <!-- MEETUBE(glass): room under a list for the floating nav pill (compact: 56dp pill + 4dp margin + 8dp gap). -->
+    <dimen name="meetube_nav_clearance">68dp</dimen>
     <!-- MEETUBE(issue #118): the pill's widest, room for its five items: a phone in portrait is
          narrower, so it spans the screen; in landscape and on a tablet it sits centred. -->
     <dimen name="meetube_nav_max_width">480dp</dimen>

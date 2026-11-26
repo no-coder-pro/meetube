@@ -3961,6 +3961,14 @@ public class MobileBrowseActivity extends MobileActivity
     @Override
     protected void onResume() {
         super.onResume();
+        View content = findViewById(android.R.id.content);
+        if (content != null) {
+            content.setTag(R.id.meetune_switching, null);
+            if (content.getAlpha() < 1f) {
+                content.animate().cancel();
+                content.setAlpha(1f);
+            }
+        }
         mPreview.schedule();
         mTopBar.syncMark(this);
         syncMeeTuneHint(); // MEETUNE
@@ -4080,9 +4088,8 @@ public class MobileBrowseActivity extends MobileActivity
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
 
-        if (hasFocus) {
-            SystemPipBridge.restoreFromLauncher(this);
-        }
+        // Do not auto-restore PiP if Browse just gained window focus during PiP entry/task switch
+        // on older Android 8/ColorOS versions, as it forces the player right back to fullscreen.
     }
 
     /**

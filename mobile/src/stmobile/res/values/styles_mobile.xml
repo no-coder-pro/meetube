@@ -58,9 +58,9 @@
         <item name="meetubeCardCorner">@dimen/mobile_card_corner_radius</item>
         <item name="meetubeRowCorner">12dp</item>
         <item name="meetubeRelatedCorner">14dp</item>
-        <item name="meetubeNavCorner">34dp</item>
+        <item name="meetubeNavCorner">28dp</item>
         <item name="meetubeNavSideMargin">16dp</item>
-        <item name="meetubeNavBottomMargin">12dp</item>
+        <item name="meetubeNavBottomMargin">4dp</item>
         <item name="meetubeNavMaxWidth">@dimen/meetube_nav_max_width</item>
         <item name="meetubeNavTint">@color/meetube_glass_tint</item>
         <item name="meetubeNavItemBackground">@drawable/bg_nav_item</item>
