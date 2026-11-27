@@ -125,7 +125,7 @@ final class MediaMuxHelper {
                     }
                     continue;
                 }
-                if (info.presentationTimeUs - lastReportUs >= 2_000_000 || lastReportUs < 0) {
+                if (info.presentationTimeUs - lastReportUs >= 500_000 || lastReportUs < 0) {
                     lastReportUs = info.presentationTimeUs;
                     if (!progress.onProgress(info.presentationTimeUs, durationUs)) {
                         throw new IOException("cancelled");

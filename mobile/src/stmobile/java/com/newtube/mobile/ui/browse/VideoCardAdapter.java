@@ -809,8 +809,15 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             if (!coming) return;
             mBadge.setVisibility(View.GONE); // its % is the big one now
             int percent = Math.max(0, item.progressPercent());
-            String head = item.isPaused() ? itemView.getContext().getString(R.string.mobile_download_badge_paused)
-                    : percent + "%";
+            String head;
+            if (item.isPaused()) {
+                head = itemView.getContext().getString(R.string.mobile_download_badge_paused);
+            } else if (item.state == com.newtube.mobile.downloads.DownloadItem.STATE_PROCESSING) {
+                int p = item.processingPercent;
+                head = p >= 0 ? p + "%" : percent + "%";
+            } else {
+                head = percent + "%";
+            }
             float rate = item.bytesPerSec;
             String speed = item.state == com.newtube.mobile.downloads.DownloadItem.STATE_DOWNLOADING && rate >= 1f
                     ? com.newtube.mobile.downloads.DownloadOptions.formatBytes(Math.round(rate)) + "/s" : null;

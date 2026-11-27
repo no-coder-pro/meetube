@@ -48,6 +48,7 @@ public final class DownloadItem {
     public volatile boolean song;
 
     public volatile int state = STATE_QUEUED;
+    public volatile int processingPercent = -1;
     public volatile long bytesDone;
     public volatile long bytesTotal = -1;
     @Nullable public volatile String outputUri;
@@ -166,6 +167,9 @@ public final class DownloadItem {
 
     /** 0..100, or -1 while the total is unknown. */
     public int progressPercent() {
+        if (state == STATE_PROCESSING) {
+            return processingPercent >= 0 ? processingPercent : 100;
+        }
         long total = bytesTotal;
         if (total <= 0) {
             return -1;

@@ -46,8 +46,12 @@ final class DownloadProgressText {
                 return context.getString(R.string.mobile_download_state_paused, percent,
                         DownloadOptions.formatBytes(item.bytesDone), DownloadOptions.formatBytes(item.bytesTotal));
             }
-            case DownloadItem.STATE_PROCESSING:
-                return context.getString(R.string.mobile_download_state_processing);
+            case DownloadItem.STATE_PROCESSING: {
+                int p = item.processingPercent;
+                return p >= 0
+                        ? context.getString(R.string.mobile_download_state_processing) + " " + p + "%"
+                        : context.getString(R.string.mobile_download_state_processing);
+            }
             case DownloadItem.STATE_FAILED:
                 return item.error != null ? item.error : context.getString(R.string.mobile_download_error_generic);
             case DownloadItem.STATE_DONE:

@@ -3230,7 +3230,7 @@ public class MobileBrowseActivity extends MobileActivity
                 }
             }
             mStrip.show(FeedStrip.MODE_AVATARS, avatars,
-                    mSubsChannel != null ? mSubsChannels.indexOf(mSubsChannel) : -1);
+                    (mSubsChannel != null && mSubsChannels != null) ? mSubsChannels.indexOf(mSubsChannel) : -1);
             updateChipRow();
         } else {
             mStrip.show(FeedStrip.MODE_NONE, null, 0);
