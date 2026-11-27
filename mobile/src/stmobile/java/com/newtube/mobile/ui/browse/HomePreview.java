@@ -61,7 +61,7 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
     }
 
     /** Where {@code video}'s preview is playing now, in ms; 0 when it isn't (or Continue is off). */
-    long continueMs(Video video) {
+    public long continueMs(Video video) {
         if (mHolder == null || video == null || video.videoId == null || !continues(mContext)
                 || !video.videoId.equals(mPlayer.videoId()) || mTexture.getAlpha() == 0f) {
             return 0;
@@ -124,7 +124,7 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
         }
     };
 
-    HomePreview(@NonNull RecyclerView grid, @NonNull BooleanSupplier allowed) {
+    public HomePreview(@NonNull RecyclerView grid, @NonNull BooleanSupplier allowed) {
         mContext = grid.getContext();
         mGrid = grid;
         mAllowed = allowed;
@@ -240,20 +240,20 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
     }
 
     /** Looks again for the card to play, once the screen has been still for a moment. */
-    void schedule() {
+    public void schedule() {
         mMain.removeCallbacks(mPick);
         mMain.postDelayed(mPick, SETTLE_MS);
     }
 
     /** The feed changed under us: drop a preview whose card now shows another video, else look again. */
-    void onDataChanged() {
+    public void onDataChanged() {
         if (mHolder != null && (mHolder.video() == null || !mHolder.video().videoId.equals(mPlayer.videoId()))) {
             stop();
         }
         schedule();
     }
 
-    void stop() {
+    public void stop() {
         mMain.removeCallbacks(mPick);
         mMain.removeCallbacks(mTick);
         if (mHolder != null && mHolder.video() != null && mHolder.video().videoId != null && mPlaying) {
@@ -267,7 +267,7 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
         detach();
     }
 
-    void release() {
+    public void release() {
         stop();
         mPlayer.release();
     }

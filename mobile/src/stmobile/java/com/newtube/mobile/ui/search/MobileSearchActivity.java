@@ -36,6 +36,7 @@ import com.liskovsoft.smartyoutubetv2.common.app.presenters.SearchPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.views.SearchView;
 import com.liskovsoft.smartyoutubetv2.common.misc.NetPath;
 import com.liskovsoft.smartyoutubetv2.tv.R;
+import com.newtube.mobile.ui.browse.HomePreview;
 import com.newtube.mobile.ui.browse.VideoCardAdapter;
 import com.newtube.mobile.ui.common.FilteredPageTopUp;
 import com.newtube.mobile.ui.common.MobileActivity;
@@ -120,6 +121,7 @@ public class MobileSearchActivity extends MobileActivity
     private RecyclerView mGrid;
     private GridLayoutManager mLayoutManager;
     private VideoCardAdapter mAdapter;
+    private HomePreview mPreview;
     private View mSkeleton;
     /** The presenter's loading state (showProgressBar), for a clear that lands mid-load. */
     private boolean mLoading;
@@ -496,6 +498,43 @@ public class MobileSearchActivity extends MobileActivity
         mGrid.setItemViewCacheSize(8);
         mGrid.setLayoutManager(mLayoutManager);
         mGrid.setAdapter(mAdapter);
+        // Autoplay search result cards from the top as on Home
+        mPreview = new HomePreview(mGrid, () ->
+                getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)
+                && (mSuggestions == null || mSuggestions.getVisibility() != View.VISIBLE)
+                && (mSearchMessage == null || mSearchMessage.getVisibility() != View.VISIBLE)
+                && !MiniPlayerBridge.isActive()
+                && (mGrid != null && !mVideos.isEmpty()));
+
+        mAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                if (mPreview != null) {
+                    mPreview.onDataChanged();
+                }
+            }
+
+            @Override
+            public void onItemRangeChanged(int start, int count) {
+                if (mPreview != null) {
+                    mPreview.onDataChanged();
+                }
+            }
+
+            @Override
+            public void onItemRangeInserted(int start, int count) {
+                if (mPreview != null) {
+                    mPreview.onDataChanged();
+                }
+            }
+
+            @Override
+            public void onItemRangeRemoved(int start, int count) {
+                if (mPreview != null) {
+                    mPreview.onDataChanged();
+                }
+            }
+        });
         // Next cards' thumbnails decoded before they scroll in (no grey card + fade on a fling).
         com.newtube.mobile.ui.common.FeedThumbnailPreloader.attach(mGrid, mAdapter);
         mGrid.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -562,6 +601,9 @@ public class MobileSearchActivity extends MobileActivity
         // field is empty, live suggestions for the current text otherwise (YouTube-style).
         mSearchInput.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) {
+                if (mPreview != null) {
+                    mPreview.stop();
+                }
                 loadSearchTags(getSearchText());
             }
             showNavPill();
@@ -674,6 +716,9 @@ public class MobileSearchActivity extends MobileActivity
         mSubmittedQuery = normalized;
         mPendingFailure = -1;
         mSearchMessage.setVisibility(View.GONE);
+        if (mPreview != null) {
+            mPreview.stop();
+        }
         hideKeyboard();
         mSearchInput.clearFocus();
         mSuggestions.setVisibility(View.GONE);
@@ -707,6 +752,11 @@ public class MobileSearchActivity extends MobileActivity
             return;
         }
         mPresenter.onVideoItemSelected(video);
+        long preview = mPreview != null ? mPreview.continueMs(video) : 0;
+        if (preview > 0) {
+            video.pendingPosMs = preview;
+            video.pendingPosResume = true;
+        }
         if (video.belongsToShorts()) {
             queueShorts(video);
         }
@@ -904,6 +954,9 @@ public class MobileSearchActivity extends MobileActivity
         if (mMiniPlayer != null) {
             mMiniPlayer.sync(false);
         }
+        if (mPreview != null) {
+            mPreview.schedule();
+        }
     }
 
     private void addToPlaylist(Video video) {
@@ -930,6 +983,9 @@ public class MobileSearchActivity extends MobileActivity
         if (mMiniPlayer != null) {
             mMiniPlayer.onHostPause();
         }
+        if (mPreview != null) {
+            mPreview.stop();
+        }
         super.onPause();
 
         if (mPresenter != null) {
@@ -952,6 +1008,9 @@ public class MobileSearchActivity extends MobileActivity
 
         if (mPresenter != null && mPresenter.getView() == this) {
             mPresenter.onViewDestroyed();
+        }
+        if (mPreview != null) {
+            mPreview.release();
         }
 
         super.onDestroy();
@@ -1123,6 +1182,9 @@ public class MobileSearchActivity extends MobileActivity
             if (!mVideos.isEmpty()) {
                 mSearchMessage.setVisibility(View.GONE);
                 setSkeletonVisible(false);
+                if (mPreview != null) {
+                    mPreview.schedule();
+                }
                 if (mBuzzedSequence != mSubmitSequence) {
                     mBuzzedSequence = mSubmitSequence; // once per search, not per page scrolled in
                     com.newtube.mobile.ui.common.Haptics.loaded(mSkeleton);
