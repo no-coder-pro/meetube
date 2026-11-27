@@ -572,7 +572,6 @@ final class DownloadJob {
         }
         return true;
     }
-
     static String mimeOf(@Nullable String fileName) {
         if (fileName != null && fileName.endsWith(".webm")) {
             return "video/webm";
