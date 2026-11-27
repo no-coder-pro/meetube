@@ -49,14 +49,7 @@ public final class DiscordPresence {
 
     /** From the player's listener on every play, pause, seek, speed change, new video and release. */
     public static void update(Context context, Media3PlayerController player) {
-        if (sContext == null) sContext = context.getApplicationContext();
-        Media3PlayerController last = sPlayer.get();
-        if (last != null && last != player && last.isPlaying() && !player.isPlaying()) return; // an old player stopping late
-        sPlayer = new WeakReference<>(player); // kept signed out too, so signing in mid-video shows it
-        if (!DiscordAddon.signedIn(sContext)) return;
-        sPending = activity(player);
-        MAIN.removeCallbacks(SEND);
-        MAIN.postDelayed(SEND, DEBOUNCE_MS);
+        // Disabled: saves battery, memory and network overhead
     }
 
     /** A switch changed: show the player as it is now. */

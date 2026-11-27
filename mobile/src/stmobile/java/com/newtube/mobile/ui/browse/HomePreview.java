@@ -44,7 +44,7 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
     private static final float MIN_VISIBLE = 0.65f;
 
     public static int mode(Context context) {
-        return prefs(context).getInt("home_autoplay", OFF);
+        return prefs(context).getInt("home_autoplay", ALWAYS);
     }
 
     public static void setMode(Context context, int mode) {
@@ -208,7 +208,6 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
         mPlayPause = bottomButton();
         mPlayPause.setOnClickListener(v -> {
             if (!mPlaying) {
-                // Not playing yet: user tapped play to start preview!
                 startPlayback();
             } else {
                 mUserPaused = !mUserPaused;
@@ -333,8 +332,29 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
         mProgress.getLayoutParams().height = dp(3);
         mMute.setVisibility(View.GONE);
         mCc.setVisibility(View.GONE);
+        mPlayPause.setVisibility(View.GONE);
         attach(card);
-        mPlayer.play(card.video().videoId);
+        mUserPaused = false;
+        mPlaying = true;
+        if (card.video() != null && card.video().videoId != null) {
+            String vid = card.video().videoId;
+            Long saved = sPositions.get(vid);
+            long resumePos = saved != null ? saved : 0;
+            mPlayer.play(vid, resumePos);
+        }
+    }
+
+    private void startPlayback() {
+        if (mHolder == null || mHolder.video() == null || mHolder.video().videoId == null) {
+            return;
+        }
+        mPlaying = true;
+        mUserPaused = false;
+        String vid = mHolder.video().videoId;
+        Long saved = sPositions.get(vid);
+        long resumePos = saved != null ? saved : 0;
+        mPlayer.play(vid, resumePos);
+        onFrame();
     }
 
     /** Puts the preview's overlay on {@code card}'s thumbnail, under its duration badge. */

@@ -53,7 +53,7 @@ import java.util.Random;
  * Children draw on top, unrefracted. Wire it with {@link #setSource}.
  */
 public class GlassView extends FrameLayout {
-    private static final float BLUR_DP = 8f;
+    private static final float BLUR_DP = 24f;
     /** How far past an edge {@link #setBlurReach} looks: the blur's whole kernel. */
     public static final float BLUR_REACH_DP = 2 * BLUR_DP;
     private static final float SATURATION = 1.5f;
@@ -222,6 +222,7 @@ public class GlassView extends FrameLayout {
             @Override
             public void getOutline(View view, Outline outline) {
                 outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), radius(view.getWidth(), view.getHeight()));
+                outline.setAlpha(0.2f);
             }
         });
         setClipToOutline(true);
@@ -408,13 +409,11 @@ public class GlassView extends FrameLayout {
         } else if (mOnGlass) {
             mTintPaint.setColor(mTint);
         } else {
-            // Keep translucent glass tint on devices below Android S, rather than near-opaque white
+            // Below Android S (or no live backdrop): draw a rich frosted glass tint so text behind never clashes
             int tintAlpha = (mTint >>> 24);
-            if (tintAlpha > 0 && tintAlpha <= 0x66) {
-                mTintPaint.setColor(mTint);
-            } else {
-                mTintPaint.setColor((mTint & 0x00FFFFFF) | (FALLBACK_ALPHA << 24));
-            }
+            int baseColor = (mTint & 0x00FFFFFF) != 0 ? (mTint & 0x00FFFFFF) : 0x141414;
+            int frostedAlpha = Math.max(tintAlpha, 0xD4); // ~83% frosted opacity
+            mTintPaint.setColor(baseColor | (frostedAlpha << 24));
         }
         canvas.drawRect(0, 0, getWidth(), getHeight(), mTintPaint);
         if (mLiquid) {

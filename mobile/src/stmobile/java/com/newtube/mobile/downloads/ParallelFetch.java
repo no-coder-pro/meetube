@@ -50,7 +50,7 @@ final class ParallelFetch {
     private static final String TAG = ParallelFetch.class.getSimpleName();
     static final long MIN_CHUNK = 1L << 20;
     static final long MAX_CHUNK = 8L << 20;
-    static final int START_WORKERS = 3;
+    static final int START_WORKERS = 4;
     private static final int MAX_ATTEMPTS = 8;
     /** Connections across every running fetch. */
     private static final Semaphore CONNECTIONS = new Semaphore(8);
@@ -361,7 +361,7 @@ final class ParallelFetch {
             if (body == null) {
                 throw new IOException("empty body");
             }
-            byte[] buf = new byte[64 * 1024];
+            byte[] buf = new byte[128 * 1024]; // 128 KB buffer for optimal I/O write throughput
             long position = from;
             try (InputStream in = body.byteStream()) {
                 int n;

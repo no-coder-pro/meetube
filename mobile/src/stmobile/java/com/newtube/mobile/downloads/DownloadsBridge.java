@@ -190,10 +190,17 @@ public final class DownloadsBridge implements VideoDownloads.Handler {
         // Every not-ready state carries a badge (and the thumbnail is dimmed by the card), so a
         // download never looks like a video that can be played yet.
         switch (item.state) {
-            case DownloadItem.STATE_DONE:
+            case DownloadItem.STATE_DONE: {
                 card.badge = item.durationMs > 0 ? DownloadOptions.formatDuration(item.durationMs) : null;
-                card.percentWatched = -1;
+                com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoStateService.State state =
+                        com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoStateService.instance(mContext).getByVideoId(item.videoId);
+                if (state != null && state.positionMs > 1_000 && item.durationMs > 0) {
+                    card.percentWatched = (int) (state.positionMs * 100f / item.durationMs);
+                } else {
+                    card.percentWatched = -1;
+                }
                 break;
+            }
             case DownloadItem.STATE_DOWNLOADING: {
                 int percent = item.progressPercent();
                 card.badge = percent >= 0 ? percent + "%" : mContext.getString(R.string.mobile_download_badge_downloading);

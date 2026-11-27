@@ -80,15 +80,18 @@ final class DownloadJob {
                 .build();
     }
 
-    /** Connections per stream: fewer on a metered network, a low-RAM phone or in battery saver. */
+    /** Connections per stream: safe thread allocation for low RAM and fast Wi-Fi. */
     static int maxWorkers(Context context) {
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if ((am != null && am.isLowRamDevice()) || (pm != null && pm.isPowerSaveMode())) {
+        if (pm != null && pm.isPowerSaveMode()) {
             return 2;
         }
-        return cm != null && cm.isActiveNetworkMetered() ? 4 : 6;
+        if (am != null && am.isLowRamDevice()) {
+            return 4; // Safely boost low-RAM devices from 2 to 4 workers (each worker is only 128KB buffer, zero OOM risk)
+        }
+        return cm != null && cm.isActiveNetworkMetered() ? 6 : 8; // Boost to 6:8 workers for maximum throughput
     }
 
     void run() {

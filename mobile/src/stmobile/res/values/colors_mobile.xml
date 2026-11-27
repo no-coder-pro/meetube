@@ -78,7 +78,7 @@
     <color name="mobile_player_cast_active">#64D2FF</color>
 
     <!-- MEETUBE(glass): the floating-glass surfaces (light side; dark in values-night). -->
-    <color name="meetube_glass_tint">#66FAFAFA</color>
+    <color name="meetube_glass_tint">#E6F0F2F5</color>
     <!-- MEETUBE(stats): a milky frost over a blurred page, for a card on the greeting's glass. -->
     <color name="meetube_frost_tint">#B3FFFFFF</color>
     <!-- MEETUBE(youtube mode): the docked bar's frost, denser (dark in values-night). -->

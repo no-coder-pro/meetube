@@ -389,8 +389,10 @@ public class VideoStateController extends BasePlayerController {
 
         State state = getStateService().getByVideoId(item.videoId);
 
-        // Reset position of music videos
-        boolean isShort = state != null && state.durationMs < MUSIC_VIDEO_MAX_DURATION_MS
+        boolean isDownloaded = item.isLocal() || item.localUri != null || item.downloadId != null;
+
+        // Reset position of music videos (never reset downloaded videos or audios)
+        boolean isShort = !isDownloaded && state != null && state.durationMs < MUSIC_VIDEO_MAX_DURATION_MS
                 && !getPlayerTweaksData().isRememberPositionOfShortVideosEnabled() && !fromPrevious;
         boolean isVideoEnded = state != null && state.durationMs - state.positionMs < 3_000;
         boolean isLive = item.isLive;
@@ -577,7 +579,8 @@ public class VideoStateController extends BasePlayerController {
 
         State state = getStateService().getByVideoId(item.videoId);
 
-        boolean stateIsOutdated = isStateOutdated(state, item);
+        boolean isDownloaded = item.isLocal() || item.localUri != null || item.downloadId != null;
+        boolean stateIsOutdated = !isDownloaded && isStateOutdated(state, item);
         if (stateIsOutdated) { // check that the user logged in
             // Web state is buggy on short videos (e.g. video clips)
             boolean isLongVideo = getPlayer().getDurationMs() > MUSIC_VIDEO_MAX_DURATION_MS;

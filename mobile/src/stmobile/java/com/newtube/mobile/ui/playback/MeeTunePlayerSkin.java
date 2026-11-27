@@ -315,16 +315,7 @@ public final class MeeTunePlayerSkin {
             }
         });
         mLineRow.setOnClickListener(v -> {
-            if (!mGamesHint) {
-                setMode(LYRICS);
-                return;
-            }
-            endGamesHint();
-            Context host = v.getContext();
-            while (host instanceof android.content.ContextWrapper && !(host instanceof ComponentActivity)) {
-                host = ((android.content.ContextWrapper) host).getBaseContext();
-            }
-            if (host instanceof ComponentActivity) openGames((ComponentActivity) host);
+            setMode(LYRICS);
         });
         mRoot.findViewById(R.id.meetune_player_focus).setOnClickListener(v -> setFocus(!mFocus));
         mLyricLines.setOnClickListener(v -> setMode(mMode == FULL ? LYRICS : FULL)); // a tap: the whole page, and back
@@ -1435,17 +1426,8 @@ public final class MeeTunePlayerSkin {
     private boolean mGamesHint;
     @Nullable private String mGamesHintFor;
 
-    /** No lyrics to read: for 6 s the line over the bar offers the games instead (once a song). */
+    /** No lyrics to read: games disabled. */
     private void offerGames() {
-        String id = mVideoId;
-        if (id == null || id.equals(mGamesHintFor)) return;
-        mGamesHintFor = id;
-        mGamesHint = true;
-        mLineRow.setVisibility(View.VISIBLE);
-        showLine(mRoot.getContext().getString(R.string.meetune_games_offer));
-        mLineRow.postDelayed(() -> {
-            if (mGamesHint && id.equals(mVideoId)) endGamesHint();
-        }, 6000);
     }
 
     private void endGamesHint() {
@@ -1548,21 +1530,6 @@ public final class MeeTunePlayerSkin {
     }
 
     void openGames(ComponentActivity activity) {
-        if (!isShown()) return;
-        if (mGamesPage == null) {
-            android.view.ViewStub stub = mRoot.findViewById(R.id.meetune_player_games_stub);
-            mGamesPage = (GamesPage) stub.inflate();
-            mGamesPage.setAccent(mAccent);
-            mGamesPage.setOnSelectionChanged(this::updateCloseLabel);
-            mGamesPage.setOnBack(this::backFromGames);
-            activity.getOnBackPressedDispatcher().addCallback(activity, mGamesBack);
-            activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
-                @Override public void onPause(LifecycleOwner owner) {
-                    mGamesPage.pauseGame();
-                }
-            });
-        }
-        setMode(GAMES);
     }
 
     private void backFromGames() {

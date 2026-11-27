@@ -201,7 +201,7 @@
             android:layout_height="44dp"
             android:clickable="true"
             android:contentDescription="@string/meetune_to_meetube"
-            android:elevation="6dp"
+            android:elevation="0dp"
             android:focusable="true"
             app:glassCornerRadius="22dp"
             app:glassTint="@color/meetube_glass_tint">

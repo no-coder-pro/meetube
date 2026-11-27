@@ -166,7 +166,6 @@ public final class SettingsPages {
                 context.getString(R.string.mobile_settings_downloads_summary), DOWNLOADS));
         rows.add(SettingsRow.page(R.drawable.ic_about_notifications, context.getString(R.string.mobile_settings_notifications),
                 null, NOTIFICATIONS).summary(() -> NotificationPages.summary(context)));
-        rows.add(SettingsRow.page(R.drawable.ic_meetune_addon, context.getString(R.string.discord_status), null, DISCORD));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_group_video)));
         rows.add(SettingsRow.page(R.drawable.ic_settings_playback, context.getString(R.string.mobile_settings_playback),

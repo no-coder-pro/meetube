@@ -2399,14 +2399,38 @@ public class MobileBrowseActivity extends MobileActivity
             List<Video> local = new ArrayList<>();
             for (com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoStateService.State state
                     : com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoStateService.instance(this).getStates()) {
-                local.add(0, state.video);
+                if (state != null && state.video != null) {
+                    local.add(0, state.video);
+                }
             }
+            FeedCache.put(MediaGroup.TYPE_HISTORY, local);
             showYouHistory(local);
             return;
         }
         mYouHistoryAction = com.liskovsoft.sharedutils.rx.RxHelper.execute(
                 com.liskovsoft.youtubeapi.service.YouTubeServiceManager.instance().getContentService().getHistoryObserve(),
-                group -> runOnUiThread(() -> showYouHistory(group != null ? VideoGroup.from(group).getVideos() : null)),
+                group -> runOnUiThread(() -> {
+                    List<Video> remote = group != null ? VideoGroup.from(group).getVideos() : null;
+                    List<Video> combined = new ArrayList<>();
+                    java.util.Set<String> seen = new java.util.HashSet<>();
+                    for (com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoStateService.State state
+                            : com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoStateService.instance(this).getStates()) {
+                        if (state != null && state.video != null && state.video.videoId != null) {
+                            seen.add(state.video.videoId);
+                            combined.add(0, state.video);
+                        }
+                    }
+                    if (remote != null) {
+                        for (Video v : remote) {
+                            if (v != null && v.videoId != null && seen.add(v.videoId)) {
+                                combined.add(v);
+                            }
+                        }
+                    }
+                    List<Video> toShow = !combined.isEmpty() ? combined : remote;
+                    FeedCache.put(MediaGroup.TYPE_HISTORY, toShow);
+                    showYouHistory(toShow);
+                }),
                 error -> android.util.Log.w("MobileBrowse", "You history: " + error));
     }
 
