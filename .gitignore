@@ -42,6 +42,10 @@ build/
 /smarttube/output
 /mobile/output
 /smarttubemobile/release
+# signing keys and local releases
+*.jks
+meetube-signing-key*
+Release_APKs_*/
 # google-services.json
 *.hprof
 log.txt
